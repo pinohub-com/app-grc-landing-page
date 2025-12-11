@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Políticas de Tratamiento de Datos Personales - GRC Grupo Real Colombia">
+    <title>Política de Datos | Grupo Real Colombia</title>
+    <link rel="icon" type="image/png" href="img/favicon-grc-square.png">
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
+    <style>
+        .terms-container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 2rem;
+            background: linear-gradient(180deg, rgba(45, 156, 219, 0.1) 0%, rgba(255, 255, 255, 0.98) 100%);
+            border-radius: 24px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+        }
+
+        .terms-header {
+            text-align: center;
+            margin-bottom: 3rem;
+            padding-bottom: 2rem;
+            border-bottom: 2px solid rgba(45, 156, 219, 0.2);
+        }
+
+        .terms-header h1 {
+            color: var(--color-primary);
+            font-size: 2.2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .terms-header .subtitle {
+            color: var(--color-primary-dark);
+            font-size: 1.2rem;
+        }
+
+        .terms-header .update-date {
+            color: #666;
+            font-size: 0.9rem;
+            margin-top: 1rem;
+        }
+
+        .terms-content h2 {
+            color: var(--color-primary);
+            font-size: 1.5rem;
+            margin-top: 2.5rem;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid rgba(45, 156, 219, 0.1);
+        }
+
+        .terms-content h3 {
+            color: var(--color-primary-dark);
+            font-size: 1.2rem;
+            margin-top: 1.5rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .terms-content p,
+        .terms-content li {
+            color: #333;
+            line-height: 1.8;
+            margin-bottom: 1rem;
+        }
+
+        .terms-content ul,
+        .terms-content ol {
+            padding-left: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .terms-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .terms-content strong {
+            color: var(--color-primary-dark);
+        }
+
+        .contact-box {
+            background: linear-gradient(135deg, rgba(45, 156, 219, 0.1) 0%, rgba(45, 156, 219, 0.05) 100%);
+            padding: 2rem;
+            border-radius: 16px;
+            margin-top: 2rem;
+            border-left: 4px solid var(--color-primary);
+        }
+
+        .contact-box p {
+            margin-bottom: 0.5rem;
+        }
+
+        .terms-footer {
+            text-align: center;
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 2px solid rgba(45, 156, 219, 0.2);
+            color: #666;
+            font-style: italic;
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--color-primary);
+            text-decoration: none;
+            font-weight: 600;
+            margin-bottom: 2rem;
+            transition: all 0.3s ease;
+        }
+
+        .back-link:hover {
+            color: var(--color-primary-dark);
+            transform: translateX(-5px);
+        }
+
+        .divider {
+            height: 2px;
+            background: linear-gradient(90deg, transparent, rgba(45, 156, 219, 0.3), transparent);
+            margin: 2rem 0;
+        }
+
+        .info-box {
+            background: rgba(45, 156, 219, 0.05);
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin: 1rem 0;
+            border: 1px solid rgba(45, 156, 219, 0.1);
+        }
+
+        .check-list li {
+            list-style: none;
+            position: relative;
+            padding-left: 0;
+        }
+
+        .check-list li::before {
+            content: "✓";
+            color: var(--color-primary);
+            font-weight: bold;
+            margin-right: 0.5rem;
+        }
+
+        .notice-box {
+            background: linear-gradient(135deg, rgba(45, 156, 219, 0.15) 0%, rgba(45, 156, 219, 0.05) 100%);
+            padding: 2rem;
+            border-radius: 16px;
+            margin-top: 2rem;
+            border: 2px solid rgba(45, 156, 219, 0.2);
+            text-align: center;
+        }
+
+        .notice-box h3 {
+            color: var(--color-primary);
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+
+<body style="background: linear-gradient(180deg, #f0f7fc 0%, #ffffff 100%); min-height: 100vh; padding: 2rem 1rem;">
+
+    <div class="terms-container">
+        <a href="index.html" class="back-link">
+            <i class="fas fa-arrow-left"></i> Volver al inicio
+        </a>
+
+        <div class="terms-header">
+            <h1>POLÍTICAS DE TRATAMIENTO DE DATOS PERSONALES</h1>
+            <p class="subtitle">GRC - Intermediario de Crédito</p>
+            <p class="update-date"><strong>Última actualización:</strong> Diciembre 2025</p>
+        </div>
+
+        <div class="terms-content">
+
+            <h2>1. INTRODUCCIÓN</h2>
+            <p>GRC se compromete a proteger sus datos personales conforme a la Ley 1581 de 2012 y demás normas
+                colombianas. Esta política explica cómo tratamos su información.</p>
+
+            <h2>2. RESPONSABLE</h2>
+            <div class="info-box">
+                <p><strong>GRC - Intermediario de Crédito</strong></p>
+                <p><strong>NIT:</strong> 901.234.567-8</p>
+                <p><strong><i class="fas fa-map-marker-alt"></i> Dirección:</strong> Carrera 15 # 82-45, Oficina 401,
+                    Bogotá D.C., Colombia</p>
+                <p><strong><i class="fas fa-envelope"></i> Correo:</strong> datos@gruporealcolombia.com</p>
+                <p><strong><i class="fas fa-phone"></i> Teléfono:</strong> +57 322 633 4519</p>
+            </div>
+
+            <h2>3. DATOS QUE TRATAMOS</h2>
+
+            <p><strong>Datos de identificación:</strong></p>
+            <ul>
+                <li>Nombre completo, documento de identidad, fecha de nacimiento, fotografía</li>
+            </ul>
+
+            <p><strong>Datos de contacto:</strong></p>
+            <ul>
+                <li>Dirección, teléfonos, correo electrónico</li>
+            </ul>
+
+            <p><strong>Datos laborales:</strong></p>
+            <ul>
+                <li>Empresa, cargo, ingresos, antigüedad laboral</li>
+            </ul>
+
+            <p><strong>Datos financieros:</strong></p>
+            <ul>
+                <li>Cuentas bancarias, historial crediticio, obligaciones, activos, pasivos</li>
+            </ul>
+
+            <p><strong>Datos sensibles (con autorización expresa):</strong></p>
+            <ul>
+                <li>Datos biométricos, información de salud</li>
+            </ul>
+
+            <h2>4. FINALIDADES DEL TRATAMIENTO</h2>
+            <p>Sus datos se utilizan para:</p>
+            <ol>
+                <li>Evaluar solicitudes de crédito</li>
+                <li>Consultar y reportar en centrales de riesgo</li>
+                <li>Compartir información con entidades financieras</li>
+                <li>Verificar identidad y prevenir fraude</li>
+                <li>Gestionar la relación contractual</li>
+                <li>Enviar comunicaciones sobre servicios</li>
+                <li>Cumplir obligaciones legales</li>
+                <li>Realizar análisis estadísticos</li>
+                <li>Ofrecer productos y servicios (con su autorización)</li>
+                <li>Mejorar la experiencia del usuario</li>
+            </ol>
+
+            <h2>5. DERECHOS DEL TITULAR</h2>
+            <p><strong>Usted puede:</strong></p>
+            <ul>
+                <li><strong>Conocer</strong> qué datos tenemos sobre usted</li>
+                <li><strong>Actualizar</strong> sus datos cuando cambien</li>
+                <li><strong>Rectificar</strong> información incorrecta</li>
+                <li><strong>Solicitar prueba</strong> de la autorización otorgada</li>
+                <li><strong>Revocar</strong> la autorización (cuando no exista obligación legal)</li>
+                <li><strong>Suprimir</strong> sus datos (cuando sea procedente)</li>
+                <li><strong>Acceder gratuitamente</strong> a sus datos mínimo una vez al mes</li>
+                <li><strong>Presentar quejas</strong> ante la SIC por incumplimientos</li>
+            </ul>
+
+            <h2>6. PROCEDIMIENTO PARA EJERCER DERECHOS</h2>
+
+            <p><strong>Paso 1:</strong> Envíe solicitud a datos@gruporealcolombia.com con:</p>
+            <ul>
+                <li>Nombre completo y documento de identidad</li>
+                <li>Descripción de su solicitud</li>
+                <li>Dirección y medio de contacto</li>
+            </ul>
+
+            <p><strong>Paso 2:</strong> Responderemos en máximo 10 días hábiles</p>
+
+            <p><strong>Paso 3:</strong> Si requiere información adicional, tiene 5 días hábiles para aportarla</p>
+
+            <p><strong>Paso 4:</strong> Resolveremos su solicitud en máximo 15 días hábiles desde la respuesta inicial
+            </p>
+
+            <h2>7. AUTORIZACIÓN</h2>
+            <p>Al usar nuestros servicios, usted autoriza:</p>
+            <ul class="check-list">
+                <li>Recolectar, almacenar y usar sus datos personales</li>
+                <li>Consultar su información en centrales de riesgo</li>
+                <li>Reportar su comportamiento crediticio</li>
+                <li>Compartir datos con entidades financieras</li>
+                <li>Transferir información a proveedores de servicios</li>
+                <li>Usar datos para las finalidades descritas</li>
+            </ul>
+            <p>Para datos sensibles se requiere autorización previa, expresa e informada.</p>
+
+            <h2>8. CON QUIÉN COMPARTIMOS SUS DATOS</h2>
+
+            <p><strong>Encargados del tratamiento:</strong></p>
+            <ul>
+                <li>Proveedores tecnológicos (hosting, software)</li>
+                <li>Servicios de verificación de identidad</li>
+                <li>Plataformas de comunicación</li>
+            </ul>
+
+            <p><strong>Destinatarios:</strong></p>
+            <ul>
+                <li>Entidades financieras (bancos, cooperativas)</li>
+                <li>Centrales de riesgo (Datacrédito, TransUnion, Midatacredito)</li>
+                <li>Autoridades competentes (cuando la ley lo exija)</li>
+            </ul>
+            <p>Todos están obligados contractualmente a proteger su información.</p>
+
+            <h2>9. TRANSFERENCIAS INTERNACIONALES</h2>
+            <p>Solo realizamos transferencias internacionales cuando:</p>
+            <ul>
+                <li>El país destino tiene nivel adecuado de protección</li>
+                <li>Obtenemos su autorización previa</li>
+                <li>Implementamos cláusulas de protección</li>
+            </ul>
+
+            <h2>10. MEDIDAS DE SEGURIDAD</h2>
+            <p><strong>Protegemos sus datos con:</strong></p>
+            <ul>
+                <li>Cifrado de información sensible</li>
+                <li>Acceso restringido mediante contraseñas</li>
+                <li>Protocolos de seguridad SSL/TLS</li>
+                <li>Monitoreo constante de sistemas</li>
+                <li>Capacitación del personal</li>
+                <li>Acuerdos de confidencialidad</li>
+                <li>Auditorías periódicas</li>
+                <li>Plan de respuesta a incidentes</li>
+            </ul>
+
+            <h2>11. CONSERVACIÓN DE DATOS</h2>
+            <p><strong>Conservamos sus datos:</strong></p>
+            <ul>
+                <li>Durante la relación comercial activa</li>
+                <li>5 años adicionales mínimo (obligación legal contable y financiera)</li>
+                <li>El tiempo necesario para defender derechos legales</li>
+            </ul>
+            <p><strong>Eliminación:</strong> Una vez cumplido el plazo, eliminamos la información de forma segura e
+                irreversible.</p>
+
+            <h2>12. DEBERES DE GRC</h2>
+            <p>GRC se compromete a:</p>
+            <ul>
+                <li>Garantizar el derecho de habeas data</li>
+                <li>Solicitar autorización previa e informada</li>
+                <li>Informar el uso de datos recopilados</li>
+                <li>Conservar copia de la autorización</li>
+                <li>Proteger datos con medidas de seguridad</li>
+                <li>Actualizar la información cuando sea necesario</li>
+                <li>Rectificar datos inexactos</li>
+                <li>Responder consultas y reclamos oportunamente</li>
+                <li>Capacitar al personal en protección de datos</li>
+            </ul>
+
+            <h2>13. DEBERES DEL TITULAR</h2>
+            <p><strong>Usted debe:</strong></p>
+            <ul>
+                <li>Proporcionar información veraz y completa</li>
+                <li>Actualizar sus datos cuando cambien</li>
+                <li>Informar cambios en la información suministrada</li>
+                <li>No suministrar datos de terceros sin autorización</li>
+            </ul>
+
+            <h2>14. MENORES DE EDAD</h2>
+            <p>No recopilamos datos de menores de 18 años. Si detectamos información de menores, la eliminaremos
+                inmediatamente.</p>
+
+            <h2>15. CONSULTAS Y RECLAMOS</h2>
+
+            <div class="info-box">
+                <p><strong>Para consultas sobre sus datos:</strong></p>
+                <p><i class="fas fa-envelope"></i> Correo: datos@gruporealcolombia.com</p>
+                <p><i class="fas fa-clock"></i> Tiempo de respuesta: 10 días hábiles</p>
+            </div>
+
+            <div class="info-box">
+                <p><strong>Para reclamos por datos inexactos:</strong></p>
+                <p><i class="fas fa-envelope"></i> Correo: reclamos@gruporealcolombia.com</p>
+                <p>Incluya: identificación, descripción del reclamo, documentos soporte</p>
+                <p><i class="fas fa-clock"></i> Tiempo de respuesta: 15 días hábiles</p>
+            </div>
+
+            <div class="contact-box">
+                <p><strong>Si no está satisfecho:</strong></p>
+                <p><strong>Superintendencia de Industria y Comercio</strong></p>
+                <p><i class="fas fa-globe"></i> Web: <a href="https://www.sic.gov.co" target="_blank"
+                        style="color: var(--color-primary);">www.sic.gov.co</a></p>
+                <p><i class="fas fa-phone"></i> Tel: (601) 587 0000</p>
+            </div>
+
+            <h2>16. VIGENCIA</h2>
+            <p>Esta política rige a partir de su publicación y permanece vigente hasta ser modificada. Las
+                actualizaciones se publicarán en nuestro sitio web.</p>
+
+            <h2>17. MARCO LEGAL</h2>
+            <p>Cumplimos con:</p>
+            <ul>
+                <li>Ley 1581 de 2012</li>
+                <li>Decreto 1377 de 2013</li>
+                <li>Decreto 1074 de 2015</li>
+                <li>Ley 1266 de 2008</li>
+                <li>Sentencia C-748 de 2011</li>
+            </ul>
+
+            <h2>18. CONTACTO</h2>
+            <div class="contact-box">
+                <p><strong>Área de Protección de Datos:</strong></p>
+                <p><i class="fas fa-envelope"></i> Correo: datos@gruporealcolombia.com</p>
+                <p><i class="fas fa-phone"></i> Teléfono: +57 322 633 4519</p>
+                <p><i class="fas fa-map-marker-alt"></i> Dirección: Carrera 15 # 82-45, Oficina 401, Bogotá D.C.,
+                    Colombia</p>
+                <p><i class="fas fa-clock"></i> Horario: Lunes a viernes, 8:00 AM - 6:00 PM</p>
+            </div>
+
+            <div class="divider"></div>
+
+            <div class="notice-box">
+                <h3>AVISO DE PRIVACIDAD</h3>
+                <p>Al proporcionar sus datos personales a GRC, usted declara que:</p>
+                <ul style="text-align: left; display: inline-block;">
+                    <li>Ha leído y comprendido esta política</li>
+                    <li>Autoriza el tratamiento de sus datos</li>
+                    <li>La información suministrada es veraz y completa</li>
+                    <li>Acepta la consulta en centrales de riesgo</li>
+                </ul>
+                <p style="margin-top: 1rem;"><strong>Fecha de vigencia:</strong> Diciembre 2025</p>
+            </div>
+
+            <p class="terms-footer">
+                <strong>GRC - Grupo Real Colombia © 2025</strong>
+            </p>
+        </div>
+    </div>
+
+</body>
+
+</html>
