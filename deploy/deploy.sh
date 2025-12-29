@@ -1,115 +1,241 @@
 #!/bin/bash
-# Simple Deploy Script - app-pinohub-landing
 
-set -e
+# Pinohub Landing Page Deployment Script (Integrated)
+# This script orchestrates the build and deployment phases into a single call
+# Usage: ./deploy.sh [stage] [region]
+# 
+# This script calls:
+#   1. build.sh - Prepares all artifacts and files
+#   2. deploy-after-build.sh - Deploys to AWS
+#
+# For more control, you can run the phases separately:
+#   ./build.sh [stage] [region]
+#   ./deploy-after-build.sh [stage] [region]
 
-STAGE=${1:-dev}
-BUCKET_NAME="app-pinohub-landing"
-REGION=${AWS_REGION:-us-east-1}
+set -e  # Exit on any error
 
-# Obtener el directorio del script
+# Configuration
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-SOURCE_DIR="$SCRIPT_DIR/../src"
+PROJECT_NAME="pinohub-landing"
+DEFAULT_STAGE="dev"
+DEFAULT_REGION="us-east-1"
 
-echo "Desplegando app-pinohub-landing..."
-echo "Origen: $SOURCE_DIR"
-echo "Bucket: $BUCKET_NAME"
+# Set AWS Profile
+export AWS_PROFILE=pinohub
 
-# Verificar que el directorio fuente existe
-if [ ! -d "$SOURCE_DIR" ]; then
-    echo "ERROR: No se encuentra el directorio fuente: $SOURCE_DIR"
-    exit 1
-fi
+# Parse command line arguments
+STAGE=${1:-$DEFAULT_STAGE}
+REGION=${2:-$DEFAULT_REGION}
 
-# Crear bucket si no existe
-if ! aws s3 ls "s3://$BUCKET_NAME" >/dev/null 2>&1; then
-    echo "Creando bucket: $BUCKET_NAME"
-    aws s3 mb "s3://$BUCKET_NAME" --region "$REGION"
-else
-    echo "Bucket ya existe: $BUCKET_NAME"
-fi
+# Colors for output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+NC='\033[0m' # No Color
 
-# Subir archivos (incluyendo todos los subdirectorios y archivos)
-echo "Subiendo archivos desde $SOURCE_DIR..."
-aws s3 sync "$SOURCE_DIR/" "s3://$BUCKET_NAME" --delete --exclude "README.md"
-
-# Configurar hosting web
-aws s3 website "s3://$BUCKET_NAME" --index-document index.html --error-document index.html 2>/dev/null || true
-
-# Configurar acceso público
-aws s3api put-public-access-block --bucket "$BUCKET_NAME" --public-access-block-configuration BlockPublicAcls=false,IgnorePublicAcls=false,BlockPublicPolicy=false,RestrictPublicBuckets=false 2>/dev/null || true
-
-# Aplicar política pública
-cat > temp-policy.json << EOF
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Sid": "PublicReadGetObject",
-      "Effect": "Allow",
-      "Principal": "*",
-      "Action": "s3:GetObject",
-      "Resource": "arn:aws:s3:::$BUCKET_NAME/*"
-    },
-    {
-      "Sid": "PublicReadBucket",
-      "Effect": "Allow",
-      "Principal": "*",
-      "Action": "s3:ListBucket",
-      "Resource": "arn:aws:s3:::$BUCKET_NAME"
-    }
-  ]
+# Logging functions
+log_info() {
+    echo -e "${BLUE}[INFO]${NC} $1"
 }
-EOF
 
-aws s3api put-bucket-policy --bucket "$BUCKET_NAME" --policy file://temp-policy.json 2>/dev/null || true
-rm -f temp-policy.json
-
-# Crear distribución CloudFront
-echo "Creando distribución CloudFront (HTTPS)..."
-cat > cloudfront-config.json << EOF
-{
-  "CallerReference": "$BUCKET_NAME-$(date +%s)",
-  "Comment": "app-pinohub-landing - $STAGE",
-  "DefaultRootObject": "index.html",
-  "Origins": {
-    "Quantity": 1,
-    "Items": [{
-      "Id": "S3Origin",
-      "DomainName": "$BUCKET_NAME.s3-website-$REGION.amazonaws.com",
-      "CustomOriginConfig": {
-        "HTTPPort": 80,
-        "HTTPSPort": 443,
-        "OriginProtocolPolicy": "http-only"
-      }
-    }]
-  },
-  "DefaultCacheBehavior": {
-    "TargetOriginId": "S3Origin",
-    "ViewerProtocolPolicy": "redirect-to-https",
-    "TrustedSigners": { "Enabled": false, "Quantity": 0 },
-    "ForwardedValues": { "QueryString": false, "Cookies": { "Forward": "none" } },
-    "MinTTL": 0,
-    "Compress": true
-  },
-  "Enabled": true,
-  "PriceClass": "PriceClass_100"
+log_success() {
+    echo -e "${GREEN}[SUCCESS]${NC} $1"
 }
-EOF
 
-CLOUDFRONT_URL=$(aws cloudfront create-distribution --distribution-config file://cloudfront-config.json --query "Distribution.DomainName" --output text 2>/dev/null)
-rm -f cloudfront-config.json
+log_warning() {
+    echo -e "${YELLOW}[WARNING]${NC} $1"
+}
 
-# Mostrar resultado
-WEBSITE_URL="http://$BUCKET_NAME.s3-website-$REGION.amazonaws.com"
-echo ""
-echo "LISTO! Tu sitio esta online:"
-echo "S3 URL: $WEBSITE_URL"
-if [ ! -z "$CLOUDFRONT_URL" ]; then
-    echo "HTTPS URL: https://$CLOUDFRONT_URL"
+log_error() {
+    echo -e "${RED}[ERROR]${NC} $1"
+}
+
+# Check if required scripts exist
+check_required_scripts() {
+    log_info "Checking required scripts..."
+    
+    local required_scripts=("build.sh" "deploy-after-build.sh")
+    local missing_scripts=()
+    
+    for script in "${required_scripts[@]}"; do
+        if [ -f "$SCRIPT_DIR/$script" ]; then
+            log_success "Found: $script"
+        else
+            log_error "Missing: $script"
+            missing_scripts+=("$script")
+        fi
+    done
+    
+    if [ ${#missing_scripts[@]} -ne 0 ]; then
+        log_error "Missing required scripts: ${missing_scripts[*]}"
+        log_error "Please ensure build.sh and deploy-after-build.sh are present"
+        exit 1
+    fi
+}
+
+# Make scripts executable
+make_scripts_executable() {
+    log_info "Ensuring scripts are executable..."
+    
+    chmod +x "$SCRIPT_DIR/build.sh" 2>/dev/null || log_warning "Could not make build.sh executable"
+    chmod +x "$SCRIPT_DIR/deploy-after-build.sh" 2>/dev/null || log_warning "Could not make deploy-after-build.sh executable"
+    
+    log_success "Scripts are executable"
+}
+
+# Run build phase
+run_build_phase() {
+    log_info "🚀 Starting BUILD phase..."
+    log_info "Running: ./build.sh $STAGE $REGION"
+    
+    # Ensure environment variables are passed to build script
+    export STAGE
+    export REGION
+    
+    if "$SCRIPT_DIR/build.sh" "$STAGE" "$REGION"; then
+        log_success "✅ BUILD phase completed successfully"
+        return 0
+    else
+        log_error "❌ BUILD phase failed"
+        return 1
+    fi
+}
+
+# Run deployment phase
+run_deployment_phase() {
+    log_info "🚀 Starting DEPLOYMENT phase..."
+    log_info "Running: ./deploy-after-build.sh $STAGE $REGION"
+    
+    # Ensure environment variables are passed to deploy script
+    export STAGE
+    export REGION
+    
+    if "$SCRIPT_DIR/deploy-after-build.sh" "$STAGE" "$REGION"; then
+        log_success "✅ DEPLOYMENT phase completed successfully"
+        return 0
+    else
+        log_error "❌ DEPLOYMENT phase failed"
+        return 1
+    fi
+}
+
+# Cleanup function
+cleanup() {
+    log_info "Cleaning up..."
+    
+    # DO NOT clean up build artifacts - they are needed for debugging and retry
+    # Build artifacts should persist even after deployment failure
+    if [ "$DEPLOYMENT_FAILED" = "true" ]; then
+        log_info "Deployment failed - build artifacts preserved for debugging"
+        log_info "Build artifacts location: build-artifacts/${STAGE}/"
+        log_info "You can retry deployment with: ./deploy-after-build.sh ${STAGE}"
+    fi
+}
+
+# Main deployment function
+main() {
+    log_info "Starting integrated deployment of $PROJECT_NAME"
+    log_info "Stage: $STAGE"
+    log_info "Region: $REGION"
+    log_info "Working directory: $SCRIPT_DIR"
+    
+    # Change to script directory
+    cd "$SCRIPT_DIR"
+    
+    # Set up trap for cleanup on exit
+    trap cleanup EXIT
+    
+    # Initialize deployment failure flag
+    export DEPLOYMENT_FAILED="false"
+    
+    # Run pre-deployment checks
+    check_required_scripts
+    make_scripts_executable
+    
+    # Phase 1: Build
+    log_info "=========================================="
+    log_info "PHASE 1: BUILD AND PREPARATION"
+    log_info "=========================================="
+    
+    if ! run_build_phase; then
+        log_error "Build phase failed. Deployment aborted."
+        exit 1
+    fi
+    
+    # Phase 2: Deploy
+    log_info "=========================================="
+    log_info "PHASE 2: AWS DEPLOYMENT"
+    log_info "=========================================="
+    
+    if ! run_deployment_phase; then
+        log_error "Deployment phase failed."
+        export DEPLOYMENT_FAILED="true"
+        exit 1
+    fi
+    
+    # Success
+    log_success "=========================================="
+    log_success "🎉 INTEGRATED DEPLOYMENT COMPLETED!"
+    log_success "=========================================="
+    log_info "Your landing page is now live and ready"
+    log_info "The website has been uploaded to S3 and is accessible via CloudFront"
+    
+    # Show build artifacts location
+    local build_dir="build-artifacts/${STAGE}"
+    if [ -d "$build_dir" ]; then
+        log_info "Build artifacts are available in: $build_dir/"
+        log_info "You can reuse these artifacts for future deployments"
+    fi
+}
+
+# Help function
+show_help() {
+    echo "Usage: $0 [stage] [region]"
     echo ""
-    echo "Usa la URL HTTPS para acceso seguro y rapido!"
-else
-    echo "CloudFront: Creando... (puede tardar 15 minutos)"
-fi
-echo ""
+    echo "Arguments:"
+    echo "  stage   Deployment stage (default: $DEFAULT_STAGE)"
+    echo "  region  AWS region (default: $DEFAULT_REGION)"
+    echo ""
+    echo "Examples:"
+    echo "  $0                    # Deploy to dev stage in us-east-1"
+    echo "  $0 prod               # Deploy to prod stage in us-east-1"
+    echo "  $0 dev us-west-2      # Deploy to dev stage in us-west-2"
+    echo ""
+    echo "What this script does (INTEGRATED DEPLOYMENT):"
+    echo "  🔧 PHASE 1 - BUILD:"
+    echo "     • Sets stage-specific environment variables"
+    echo "     • Installs all dependencies (Node.js, Serverless Framework)"
+    echo "     • Creates build artifacts directory"
+    echo "     • Prepares all files for deployment"
+    echo "  🚀 PHASE 2 - DEPLOY:"
+    echo "     • Validates AWS credentials"
+    echo "     • Deploys infrastructure using Serverless Framework"
+    echo "     • Configures S3 bucket and uploads website files"
+    echo "     • Creates CloudFront invalidation"
+    echo "     • Provides deployment information"
+    echo ""
+    echo "This script is equivalent to running:"
+    echo "  ./build.sh [stage] [region]"
+    echo "  ./deploy-after-build.sh [stage] [region]"
+    echo ""
+    echo "For more control, you can run the phases separately:"
+    echo "  ./build.sh [stage] [region]        # Build phase only"
+    echo "  ./deploy-after-build.sh [stage] [region]  # Deploy phase only"
+    echo ""
+    echo "Prerequisites:"
+    echo "  - Node.js (>=18.0.0)"
+    echo "  - AWS CLI configured"
+    echo "  - Internet connection for dependency installation"
+}
+
+# Handle command line arguments
+case "${1:-}" in
+    -h|--help)
+        show_help
+        exit 0
+        ;;
+    *)
+        main
+        ;;
+esac

@@ -1,0 +1,219 @@
+service: pinohub-landing
+
+frameworkVersion: '4'
+
+plugins:
+  - serverless-stack-output
+
+provider:
+  name: aws
+  runtime: provided.al2  # Not used, but required by Serverless Framework
+  stage: ${opt:stage, 'dev'}
+  region: ${opt:region, 'us-east-1'}
+  stackName: pinohub-landing-${self:provider.stage}
+
+# Custom configuration
+custom:
+  # Serverless stack output plugin configuration
+  output:
+    file: .serverless/stack-output-${self:provider.stage}.json
+    handler: false
+    mode: merge
+  
+  # Pinohub domain configuration - values from main-infra SSM parameters
+  # These are stage-agnostic since the hosted zone and certificate are shared across all environments
+  pinohubDomain: ${ssm:/pinohub/domain-name}
+  pinohubHostedZoneId: ${ssm:/pinohub/hosted-zone-id}
+  pinohubCertificateArn: ${ssm:/pinohub/certificate-arn}
+  
+  # Subdomain configuration
+  frontendSubdomain: landing-${self:provider.stage}
+  frontendDomain: ${self:custom.frontendSubdomain}.${self:custom.pinohubDomain}
+  
+  # S3 Bucket name with account ID
+  websiteBucketName: ${self:service}-${self:provider.stage}-website-${aws:accountId}
+
+# No functions needed - this is a static site
+functions: {}
+
+# Resources for static website hosting
+resources:
+  Conditions:
+    # Condition to check if this is production stage
+    IsProduction: !Equals ['${self:provider.stage}', 'prod']
+  
+  Resources:
+    # S3 Bucket for hosting static website
+    WebsiteBucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: ${self:custom.websiteBucketName}
+        PublicAccessBlockConfiguration:
+          BlockPublicAcls: true
+          BlockPublicPolicy: true
+          IgnorePublicAcls: true
+          RestrictPublicBuckets: true
+        CorsConfiguration:
+          CorsRules:
+            - AllowedHeaders: ['*']
+              AllowedMethods: [GET, HEAD]
+              AllowedOrigins: ['*']
+              MaxAge: 3600
+              ExposedHeaders: ['ETag']
+
+    # S3 Bucket Policy for CloudFront OAC access
+    WebsiteBucketPolicy:
+      Type: AWS::S3::BucketPolicy
+      DependsOn: 
+        - WebsiteBucket
+        - CloudFrontDistribution
+      Properties:
+        Bucket: !Ref WebsiteBucket
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+            # Allow CloudFront OAC to read objects
+            - Sid: AllowCloudFrontOAC
+              Effect: Allow
+              Principal:
+                Service: cloudfront.amazonaws.com
+              Action: 's3:GetObject'
+              Resource: !Sub 'arn:aws:s3:::${WebsiteBucket}/*'
+              Condition:
+                StringEquals:
+                  'AWS:SourceArn': !Sub 'arn:aws:cloudfront::${AWS::AccountId}:distribution/${CloudFrontDistribution}'
+
+    # CloudFront Origin Access Control (OAC) for S3 access
+    CloudFrontOriginAccessControl:
+      Type: AWS::CloudFront::OriginAccessControl
+      Properties:
+        OriginAccessControlConfig:
+          Name: ${self:service}-${self:provider.stage}-oac
+          OriginAccessControlOriginType: s3
+          SigningBehavior: always
+          SigningProtocol: sigv4
+          Description: OAC for ${self:service}-${self:provider.stage} website
+
+    # CloudFront Distribution for static website
+    CloudFrontDistribution:
+      Type: AWS::CloudFront::Distribution
+      DependsOn: 
+        - WebsiteBucket
+        - CloudFrontOriginAccessControl
+      Properties:
+        DistributionConfig:
+          Comment: CloudFront distribution for ${self:service}-${self:provider.stage} static website
+          Enabled: true
+          HttpVersion: http2and3
+          IPV6Enabled: true
+          PriceClass: PriceClass_100
+          DefaultRootObject: index.html
+          Origins:
+            - Id: S3-${self:custom.websiteBucketName}
+              DomainName: !GetAtt WebsiteBucket.RegionalDomainName
+              S3OriginConfig: {}
+              OriginAccessControlId: !GetAtt CloudFrontOriginAccessControl.Id
+          DefaultCacheBehavior:
+            TargetOriginId: S3-${self:custom.websiteBucketName}
+            ViewerProtocolPolicy: redirect-to-https
+            AllowedMethods:
+              - GET
+              - HEAD
+              - OPTIONS
+            CachedMethods:
+              - GET
+              - HEAD
+            ForwardedValues:
+              QueryString: false
+              Cookies:
+                Forward: none
+            MinTTL: 0
+            DefaultTTL: 86400
+            MaxTTL: 31536000
+            Compress: true
+          # Custom error responses for SPA routing
+          # These ensure that all routes serve index.html
+          CustomErrorResponses:
+            - ErrorCode: 403
+              ResponseCode: 200
+              ResponsePagePath: /index.html
+              ErrorCachingMinTTL: 0
+            - ErrorCode: 404
+              ResponseCode: 200
+              ResponsePagePath: /index.html
+              ErrorCachingMinTTL: 0
+          # Custom domain configuration using the ACM certificate from main-infra
+          # For production stage, also add root domain (pinohub.com)
+          Aliases:
+            Fn::If:
+              - IsProduction
+              - - ${self:custom.frontendDomain}
+                - ${self:custom.pinohubDomain}
+              - - ${self:custom.frontendDomain}
+          ViewerCertificate:
+            # Certificate ARN is obtained from main-infra via SSM parameter
+            AcmCertificateArn: ${self:custom.pinohubCertificateArn}
+            SslSupportMethod: sni-only
+            MinimumProtocolVersion: TLSv1.2_2021
+          Restrictions:
+            GeoRestriction:
+              RestrictionType: none
+
+  Outputs:
+    # S3 Bucket Name
+    WebsiteBucketName:
+      Description: "Name of the S3 bucket for website hosting"
+      Value:
+        Ref: WebsiteBucket
+      Export:
+        Name: ${self:service}-${self:provider.stage}-website-bucket
+    
+    # CloudFront Distribution ID
+    CloudFrontDistributionId:
+      Description: "CloudFront Distribution ID for static website"
+      Value:
+        Ref: CloudFrontDistribution
+      Export:
+        Name: ${self:service}-${self:provider.stage}-cloudfront-distribution-id
+    
+    # CloudFront Distribution Domain Name
+    CloudFrontDistributionDomain:
+      Description: "CloudFront Distribution Domain Name (HTTPS URL)"
+      Value:
+        Fn::GetAtt:
+          - CloudFrontDistribution
+          - DomainName
+      Export:
+        Name: ${self:service}-${self:provider.stage}-cloudfront-domain
+    
+    # CloudFront Distribution URL (HTTPS)
+    CloudFrontDistributionUrl:
+      Description: "Full HTTPS URL for CloudFront Distribution"
+      Value:
+        Fn::Join:
+          - ""
+          - - "https://"
+            - Fn::GetAtt:
+                - CloudFrontDistribution
+                - DomainName
+      Export:
+        Name: ${self:service}-${self:provider.stage}-cloudfront-url
+
+    # Pinohub.com Frontend Domain URL (HTTPS)
+    PinohubFrontendUrl:
+      Description: "Full HTTPS URL for Pinohub.com frontend domain"
+      Value:
+        Fn::Join:
+          - ""
+          - - "https://"
+            - ${self:custom.frontendDomain}
+      Export:
+        Name: ${self:service}-${self:provider.stage}-pinohub-frontend-url
+
+    # Pinohub.com Frontend Domain Name
+    PinohubFrontendDomain:
+      Description: "Pinohub.com frontend domain name"
+      Value: ${self:custom.frontendDomain}
+      Export:
+        Name: ${self:service}-${self:provider.stage}-pinohub-frontend-domain
+

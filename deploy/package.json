@@ -1,0 +1,24 @@
+{
+  "name": "pinohub-landing-infrastructure",
+  "version": "1.0.0",
+  "description": "Infrastructure for pinohub.com landing page - S3, CloudFront, and Route53",
+  "scripts": {
+    "deploy": "cross-env AWS_PROFILE=pinohub serverless deploy",
+    "deploy:dev": "cross-env AWS_PROFILE=pinohub serverless deploy --verbose --stage dev",
+    "deploy:prod": "cross-env AWS_PROFILE=pinohub serverless deploy --verbose --stage prod",
+    "remove": "cross-env AWS_PROFILE=pinohub serverless remove",
+    "remove:dev": "cross-env AWS_PROFILE=pinohub serverless remove --stage dev",
+    "remove:prod": "cross-env AWS_PROFILE=pinohub serverless remove --stage prod",
+    "info": "cross-env AWS_PROFILE=pinohub serverless info",
+    "info:dev": "cross-env AWS_PROFILE=pinohub serverless info --stage dev",
+    "info:prod": "cross-env AWS_PROFILE=pinohub serverless info --stage prod"
+  },
+  "dependencies": {
+    "serverless-stack-output": "^0.2.3"
+  },
+  "devDependencies": {
+    "serverless": "^4.0.0",
+    "cross-env": "^7.0.3"
+  }
+}
+

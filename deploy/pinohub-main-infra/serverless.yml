@@ -1,0 +1,216 @@
+service: pinohub-main-infrastructure
+
+frameworkVersion: '4'
+
+plugins:
+  - serverless-stack-output
+
+provider:
+  name: aws
+  stage: ${opt:stage, 'dev'}
+  region: us-east-1  # Must be us-east-1 for CloudFront certificates
+  runtime: provided.al2  # Not used, but required by Serverless Framework
+  # Stack name is stage-agnostic since hosted zone and certificate are shared across all environments
+  stackName: pinohub-main-infrastructure
+
+# Custom configuration
+custom:
+  pinohubDomain: pinohub.com
+  # Serverless stack output plugin configuration
+  output:
+    file: .serverless/stack-output-${self:provider.stage}.json
+
+# No functions needed - CloudFormation automatically creates validation records
+# in Route 53 when HostedZoneId is specified in DomainValidationOptions
+functions: {}
+
+# Resources for shared domain infrastructure
+resources:
+  Resources:
+    # Route 53 Hosted Zone for pinohub.com
+    # This is created ONCE and shared across all applications
+    PinohubHostedZone:
+      Type: AWS::Route53::HostedZone
+      Properties:
+        Name: ${self:custom.pinohubDomain}
+        HostedZoneConfig:
+          Comment: Shared hosted zone for pinohub.com - used by all applications
+        Tags:
+          - Key: ManagedBy
+            Value: ServerlessFramework
+          - Key: Purpose
+            Value: SharedDomainInfrastructure
+
+    # ACM Certificate for pinohub.com (must be in us-east-1 for CloudFront)
+    # Includes both root domain (pinohub.com) and wildcard (*.pinohub.com) to cover all subdomains
+    #
+    # IMPORTANT: DomainValidationOptions with HostedZoneId is NOT specified to avoid conflicts
+    # with existing validation records. If the certificate is already validated (via Porkbun),
+    # CloudFormation will use the existing certificate. If creating a new certificate, you'll need
+    # to create the validation CNAME records manually in Porkbun (not Route53).
+    #
+    # This approach prevents the "invalid set of changes" error when validation records already exist.
+    PinohubCertificate:
+      Type: AWS::CertificateManager::Certificate
+      DependsOn:
+        - PinohubHostedZone
+      Properties:
+        DomainName: ${self:custom.pinohubDomain}
+        SubjectAlternativeNames:
+          - "*.${self:custom.pinohubDomain}"
+        ValidationMethod: DNS
+        # DomainValidationOptions NOT specified - validation records must be created manually
+        # in Porkbun (or wherever DNS is managed) to avoid conflicts with existing records
+        Tags:
+          - Key: ManagedBy
+            Value: ServerlessFramework
+          - Key: Purpose
+            Value: SharedDomainInfrastructure
+
+    # SSM Parameters for pinohub.com domain configuration
+    # These are stage-agnostic since the hosted zone and certificate are shared across all environments
+    PinohubHostedZoneIdParameter:
+      Type: AWS::SSM::Parameter
+      Properties:
+        Name: /pinohub/hosted-zone-id
+        Type: String
+        Value: !Ref PinohubHostedZone
+        Description: Route 53 Hosted Zone ID for pinohub.com (shared across all stages)
+        Tags:
+          ManagedBy: ServerlessFramework
+          Purpose: SharedDomainInfrastructure
+
+    PinohubHostedZoneNameServersParameter:
+      Type: AWS::SSM::Parameter
+      Properties:
+        Name: /pinohub/hosted-zone-name-servers
+        Type: String
+        Value: !Join
+          - ', '
+          - !GetAtt PinohubHostedZone.NameServers
+        Description: Route 53 Name Servers for pinohub.com - Update these at domain registrar (comma-separated, shared across all stages)
+        Tags:
+          ManagedBy: ServerlessFramework
+          Purpose: SharedDomainInfrastructure
+
+    PinohubCertificateArnParameter:
+      Type: AWS::SSM::Parameter
+      Properties:
+        Name: /pinohub/certificate-arn
+        Type: String
+        Value: !Ref PinohubCertificate
+        Description: ACM Certificate ARN for pinohub.com (us-east-1) - Use in CloudFront (shared across all stages)
+        Tags:
+          ManagedBy: ServerlessFramework
+          Purpose: SharedDomainInfrastructure
+
+    PinohubDomainNameParameter:
+      Type: AWS::SSM::Parameter
+      Properties:
+        Name: /pinohub/domain-name
+        Type: String
+        Value: ${self:custom.pinohubDomain}
+        Description: Domain name (pinohub.com, shared across all stages)
+        Tags:
+          ManagedBy: ServerlessFramework
+          Purpose: SharedDomainInfrastructure
+
+    # SES Email Identity for pinohub.com domain
+    # This allows sending emails from any address @pinohub.com (e.g., noreply@pinohub.com, support@pinohub.com)
+    # DKIM signing will be enabled automatically, and DKIM records can be added to Route 53 for better deliverability
+    PinohubSESIdentity:
+      Type: AWS::SES::EmailIdentity
+      DependsOn:
+        - PinohubHostedZone
+      Properties:
+        EmailIdentity: ${self:custom.pinohubDomain}
+        DkimSigningAttributes:
+          # Use 2048-bit RSA keys for DKIM signing
+          NextSigningKeyLength: RSA_2048_BIT
+        Tags:
+          - Key: ManagedBy
+            Value: ServerlessFramework
+          - Key: Purpose
+            Value: SharedDomainInfrastructure
+
+    # SES Configuration Set for email tracking and reputation management
+    # Optional: Can be associated with the identity for better email analytics
+    PinohubSESConfigurationSet:
+      Type: AWS::SES::ConfigurationSet
+      Properties:
+        Name: pinohub-domain-config-set
+        ReputationOptions:
+          ReputationMetricsEnabled: true
+        SendingOptions:
+          SendingEnabled: true
+        Tags:
+          - Key: ManagedBy
+            Value: ServerlessFramework
+          - Key: Purpose
+            Value: SharedDomainInfrastructure
+
+    # SSM Parameter for SES Identity ARN
+    PinohubSESIdentityArnParameter:
+      Type: AWS::SSM::Parameter
+      Properties:
+        Name: /pinohub/ses-identity-arn
+        Type: String
+        Value: !Ref PinohubSESIdentity
+        Description: SES Email Identity ARN for pinohub.com (shared across all stages)
+        Tags:
+          ManagedBy: ServerlessFramework
+          Purpose: SharedDomainInfrastructure
+
+    # SSM Parameter for SES Identity Name
+    PinohubSESIdentityNameParameter:
+      Type: AWS::SSM::Parameter
+      Properties:
+        Name: /pinohub/ses-identity-name
+        Type: String
+        Value: ${self:custom.pinohubDomain}
+        Description: SES Email Identity name (pinohub.com, shared across all stages)
+        Tags:
+          ManagedBy: ServerlessFramework
+          Purpose: SharedDomainInfrastructure
+
+  Outputs:
+    # Pinohub.com Outputs (stage-agnostic - shared across all environments)
+    PinohubHostedZoneId:
+      Description: "Route 53 Hosted Zone ID for pinohub.com (shared across all stages)"
+      Value: !Ref PinohubHostedZone
+      Export:
+        Name: ${self:service}-pinohub-hosted-zone-id
+
+    PinohubHostedZoneNameServers:
+      Description: "Route 53 Name Servers for pinohub.com - Update these at domain registrar (shared across all stages)"
+      Value: !Join
+        - ', '
+        - !GetAtt PinohubHostedZone.NameServers
+      Export:
+        Name: ${self:service}-pinohub-name-servers
+
+    PinohubCertificateArn:
+      Description: "ACM Certificate ARN for pinohub.com (us-east-1) - Use in CloudFront (shared across all stages)"
+      Value: !Ref PinohubCertificate
+      Export:
+        Name: ${self:service}-pinohub-certificate-arn
+
+    PinohubDomainName:
+      Description: "Domain name (pinohub.com, shared across all stages)"
+      Value: ${self:custom.pinohubDomain}
+      Export:
+        Name: ${self:service}-pinohub-domain-name
+
+    PinohubSESIdentityArn:
+      Description: "SES Email Identity ARN for pinohub.com (shared across all stages)"
+      Value: !Ref PinohubSESIdentity
+      Export:
+        Name: ${self:service}-pinohub-ses-identity-arn
+
+    PinohubSESIdentityName:
+      Description: "SES Email Identity name (pinohub.com, shared across all stages)"
+      Value: ${self:custom.pinohubDomain}
+      Export:
+        Name: ${self:service}-pinohub-ses-identity-name
+
+
