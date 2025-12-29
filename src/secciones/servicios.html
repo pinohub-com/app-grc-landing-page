@@ -1,17 +1,185 @@
-<!-- Sección: Qué hacemos -->
 <section class="services" id="servicios" style="padding-top: 2rem;">
     <div class="container">
-        <div class="section-header" style="margin-bottom: 2rem;">
+        <div class="section-header" style="margin-bottom: 2rem; text-align: center;">
             <h2 class="section-title">Nuestros Servicios</h2>
             <p class="section-subtitle">Soluciones integrales para el sector financiero y más allá.</p>
         </div>
         <div class="modern-card-container">
-            <div class="services-content" style="display: flex; justify-content: center; padding: 1rem 0;">
-                <img src="img/servicios-ciclo-grc.jpg"
-                    alt="Ecosistema de Servicios GRC: Viajes y Turismo, Consumo, Crédito Hipotecario, Crédito para Pensionados, Medicina Prepagada"
-                    class="grc-img-hover"
-                    style="max-width: 50%; width: 50%; height: auto; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+            <div class="services-content">
+                <div class="servicios-cycle-wrapper">
+
+                    <svg class="cycle-arrows-svg" viewBox="0 0 700 700" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <marker id="arrowhead-servicios" markerWidth="10" markerHeight="7" refX="9" refY="3.5"
+                                orient="auto">
+                                <polygon points="0 0, 10 3.5, 0 7" fill="#4A90E2" opacity="0.6" />
+                            </marker>
+                        </defs>
+
+                        <circle cx="350" cy="350" r="280" fill="none" stroke="#4A90E2" stroke-width="2"
+                            stroke-dasharray="8 8" opacity="0.5" />
+
+                        <path d="M 350 50 A 300 300 0 0 1 650 350" fill="none" stroke="rgba(25, 66, 140, 0.4)"
+                            stroke-width="2" marker-end="url(#arrowhead-servicios)" />
+                        <path d="M 650 350 A 300 300 0 0 1 350 650" fill="none" stroke="rgba(25, 66, 140, 0.4)"
+                            stroke-width="2" marker-end="url(#arrowhead-servicios)" />
+                        <path d="M 350 650 A 300 300 0 0 1 50 350" fill="none" stroke="rgba(25, 66, 140, 0.4)"
+                            stroke-width="2" marker-end="url(#arrowhead-servicios)" />
+                        <path d="M 50 350 A 300 300 0 0 1 350 50" fill="none" stroke="rgba(25, 66, 140, 0.4)"
+                            stroke-width="2" marker-end="url(#arrowhead-servicios)" />
+                    </svg>
+
+                    <div class="servicio-step servicio-step-1">
+                        <div class="servicio-title">Consumo</div>
+                        <img src="img/servicios/consumo.png" alt="Consumo">
+                    </div>
+
+                    <div class="servicio-step servicio-step-2">
+                        <div class="servicio-title">Crédito Hipotecario y de Vehículo</div>
+                        <img src="img/servicios/creditohipotecarioydevehiculo.png" alt="Crédito Hipotecario">
+                    </div>
+
+                    <div class="servicio-step servicio-step-3">
+                        <div class="servicio-title">Crédito para Pensionados, Reportados y No Reportados</div>
+                        <img src="img/servicios/creditosparapensionadosreportadosynoreportados.png"
+                            alt="Crédito para pensionados">
+                    </div>
+
+                    <div class="servicio-step servicio-step-4">
+                        <div class="servicio-title">Medicina prepagada y seguros</div>
+                        <img src="img/servicios/medicinaprepagadayseguros.png" alt="Medicina prepagada y seguros">
+                    </div>
+
+                    <div class="servicio-step servicio-step-5">
+                        <div class="servicio-title">Viajes y turismo</div>
+                        <img src="img/servicios/viajesyturismo.png" alt="Viajes y turismo">
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 </section>
+
+<style>
+    .servicios-cycle-wrapper {
+        position: relative;
+        width: 100%;
+        max-width: 650px;
+        margin: 0 auto;
+        aspect-ratio: 1;
+        padding: 1rem;
+    }
+
+    .cycle-arrows-svg {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        animation: spin 60s linear infinite;
+        /* Animación lenta opcional */
+    }
+
+    /* Estilos de tus elementos originales */
+    .servicio-step {
+        position: absolute;
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+        /* IMPORTANTE: Centra el elemento en la coordenada */
+        transform: translate(-50%, -50%);
+        width: 140px;
+        z-index: 2;
+    }
+
+    .servicio-title {
+        font-size: 0.85rem;
+        font-weight: 700;
+        color: #4A90E2;
+        line-height: 1.2;
+        text-shadow: 0 0 10px #fff;
+        /* Sombra blanca para leer mejor sobre líneas */
+    }
+
+    .servicio-step img {
+        width: 154px;
+        height: 154px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 4px solid #fff;
+        /* Borde blanco para separar de las líneas */
+        outline: 2px solid #4A90E2;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        background: white;
+        transition: transform 0.3s ease;
+    }
+
+    .servicio-step:hover img {
+        transform: scale(1.1);
+    }
+
+    /* COORDENADAS PENTAGONALES (5 Puntos) 
+       Calculadas para caer sobre el círculo exterior (Radio 280 / Canvas 700)
+    */
+
+    .servicio-step-1 {
+        left: 50%;
+        top: 10%;
+    }
+
+    /* Arriba */
+    .servicio-step-2 {
+        left: 88%;
+        top: 38%;
+    }
+
+    /* Derecha Arriba */
+    .servicio-step-3 {
+        left: 73.5%;
+        top: 82%;
+    }
+
+    /* Derecha Abajo */
+    .servicio-step-4 {
+        left: 26.5%;
+        top: 82%;
+    }
+
+    /* Izquierda Abajo */
+    .servicio-step-5 {
+        left: 12%;
+        top: 38%;
+    }
+
+    /* Izquierda Arriba */
+
+    @keyframes spin {
+        from {
+            transform: rotate(0deg);
+        }
+
+        to {
+            transform: rotate(360deg);
+        }
+    }
+
+    @media (max-width: 768px) {
+        .servicios-cycle-wrapper {
+            max-width: 350px;
+        }
+
+        .servicio-step img {
+            width: 105px;
+            height: 105px;
+        }
+
+        .servicio-title {
+            font-size: 0.7rem;
+            display: none;
+        }
+
+        /* Ocultar título en móviles pequeños */
+    }
+</style>
