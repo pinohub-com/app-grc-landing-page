@@ -5,7 +5,7 @@ REM Configuración y despliegue automático de la landing page
 REM =============================================================================
 
 echo ================================
-echo   MEDTECH LANDING PAGE SETUP   
+echo   GRC LANDING PAGE SETUP   
 echo ================================
 echo.
 
@@ -92,7 +92,7 @@ if /i "%deploy%"=="y" (
 )
 
 echo.
-echo ¡Gracias por usar MedTech Landing Page! 🚀
+echo ¡Gracias por usar GRC Landing Page! 🚀
 pause
 
 

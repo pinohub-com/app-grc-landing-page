@@ -127,7 +127,7 @@ show_invalidation_status() {
 
 # Función principal
 main() {
-    print_header "INVALIDACIÓN DE CACHÉ - MEDTECH LANDING PAGE"
+    print_header "INVALIDACIÓN DE CACHÉ - GRC LANDING PAGE"
     
     # Cargar configuración
     load_env

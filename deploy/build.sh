@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Pinohub Landing Page Build Script
+# GRC Landing Page Build Script
 # This script prepares all artifacts and files necessary for deployment
 # Usage: ./build.sh [stage] [region]
 
@@ -9,12 +9,12 @@ set -e  # Exit on any error
 # Configuration
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SOURCE_DIR="$(dirname "$SCRIPT_DIR")/src"
-PROJECT_NAME="pinohub-landing"
+PROJECT_NAME="grc-landing"
 DEFAULT_STAGE="dev"
 DEFAULT_REGION="us-east-1"
 
 # Set AWS Profile
-export AWS_PROFILE=pinohub
+export AWS_PROFILE=grc
 
 # Parse command line arguments
 STAGE=${1:-$DEFAULT_STAGE}

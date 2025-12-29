@@ -1,17 +1,17 @@
 {
-  "name": "pinohub-landing-infrastructure",
+  "name": "grc-landing-infrastructure",
   "version": "1.0.0",
-  "description": "Infrastructure for pinohub.com landing page - S3, CloudFront, and Route53",
+  "description": "Infrastructure for GRC landing page - S3, CloudFront, and Route53",
   "scripts": {
-    "deploy": "cross-env AWS_PROFILE=pinohub serverless deploy",
-    "deploy:dev": "cross-env AWS_PROFILE=pinohub serverless deploy --verbose --stage dev",
-    "deploy:prod": "cross-env AWS_PROFILE=pinohub serverless deploy --verbose --stage prod",
-    "remove": "cross-env AWS_PROFILE=pinohub serverless remove",
-    "remove:dev": "cross-env AWS_PROFILE=pinohub serverless remove --stage dev",
-    "remove:prod": "cross-env AWS_PROFILE=pinohub serverless remove --stage prod",
-    "info": "cross-env AWS_PROFILE=pinohub serverless info",
-    "info:dev": "cross-env AWS_PROFILE=pinohub serverless info --stage dev",
-    "info:prod": "cross-env AWS_PROFILE=pinohub serverless info --stage prod"
+    "deploy": "cross-env AWS_PROFILE=grc serverless deploy",
+    "deploy:dev": "cross-env AWS_PROFILE=grc serverless deploy --verbose --stage dev",
+    "deploy:prod": "cross-env AWS_PROFILE=grc serverless deploy --verbose --stage prod",
+    "remove": "cross-env AWS_PROFILE=grc serverless remove",
+    "remove:dev": "cross-env AWS_PROFILE=grc serverless remove --stage dev",
+    "remove:prod": "cross-env AWS_PROFILE=grc serverless remove --stage prod",
+    "info": "cross-env AWS_PROFILE=grc serverless info",
+    "info:dev": "cross-env AWS_PROFILE=grc serverless info --stage dev",
+    "info:prod": "cross-env AWS_PROFILE=grc serverless info --stage prod"
   },
   "dependencies": {
     "serverless-stack-output": "^0.2.3"

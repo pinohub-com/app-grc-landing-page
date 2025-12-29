@@ -92,12 +92,12 @@ create_config() {
         print_message "Creando archivo de configuración .env..."
         cat > .env << EOF
 # Configuración del proyecto
-PROJECT_NAME=medtech-landing-page
+PROJECT_NAME=grc-landing-page
 AWS_REGION=us-east-1
 STAGE=dev
 
 # Configuración opcional
-# AWS_PROFILE=default
+# AWS_PROFILE=grc
 # CUSTOM_DOMAIN=tu-dominio.com
 EOF
         print_message "Archivo .env creado. Puedes editarlo según tus necesidades."
@@ -127,7 +127,7 @@ check_structure() {
 main() {
     print_header "CONFIGURACIÓN INICIAL DEL PROYECTO"
     
-    print_message "Iniciando configuración del proyecto MedTech Landing Page..."
+    print_message "Iniciando configuración del proyecto GRC Landing Page..."
     
     # Verificaciones
     check_nodejs

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Pinohub Landing Page Destruction Script
+# GRC Landing Page Destruction Script
 # This script removes all AWS resources created by the deployment
 # Usage: ./destroy.sh [stage] [region]
 
@@ -8,12 +8,12 @@ set -e  # Exit on any error
 
 # Configuration
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PROJECT_NAME="pinohub-landing"
+PROJECT_NAME="grc-landing"
 DEFAULT_STAGE="dev"
 DEFAULT_REGION="us-east-1"
 
 # Set AWS Profile
-export AWS_PROFILE=pinohub
+export AWS_PROFILE=grc
 
 # Parse command line arguments
 STAGE=${1:-$DEFAULT_STAGE}
@@ -268,7 +268,7 @@ cleanup_on_error() {
 
 # Main function
 main() {
-    log_header "PINOHUB LANDING PAGE DESTRUCTION"
+    log_header "GRC LANDING PAGE DESTRUCTION"
     
     # Change to script directory
     cd "$SCRIPT_DIR"
@@ -303,7 +303,7 @@ show_help() {
     echo ""
     echo "Environment Variables:"
     echo "  AWS_REGION: AWS region (default: us-east-1)"
-    echo "  AWS_PROFILE: AWS profile to use (default: pinohub)"
+    echo "  AWS_PROFILE: AWS profile to use (default: grc)"
 }
 
 # Set up error trap

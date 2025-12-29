@@ -1,4 +1,4 @@
-service: pinohub-landing
+service: grc-landing
 
 frameworkVersion: '4'
 
@@ -10,7 +10,7 @@ provider:
   runtime: provided.al2  # Not used, but required by Serverless Framework
   stage: ${opt:stage, 'dev'}
   region: ${opt:region, 'us-east-1'}
-  stackName: pinohub-landing-${self:provider.stage}
+  stackName: grc-landing-${self:provider.stage}
 
 # Custom configuration
 custom:
@@ -20,15 +20,15 @@ custom:
     handler: false
     mode: merge
   
-  # Pinohub domain configuration - values from main-infra SSM parameters
+  # GRC domain configuration - values from main-infra SSM parameters
   # These are stage-agnostic since the hosted zone and certificate are shared across all environments
-  pinohubDomain: ${ssm:/pinohub/domain-name}
-  pinohubHostedZoneId: ${ssm:/pinohub/hosted-zone-id}
-  pinohubCertificateArn: ${ssm:/pinohub/certificate-arn}
+  Domain: ${ssm:/grc/domain-name}
+  grcHostedZoneId: ${ssm:/grc/hosted-zone-id}
+  grcCertificateArn: ${ssm:/grc/certificate-arn}
   
   # Subdomain configuration
   frontendSubdomain: landing-${self:provider.stage}
-  frontendDomain: ${self:custom.frontendSubdomain}.${self:custom.pinohubDomain}
+  frontendDomain: ${self:custom.frontendSubdomain}.${self:custom.Domain}
   
   # S3 Bucket name with account ID
   websiteBucketName: ${self:service}-${self:provider.stage}-website-${aws:accountId}
@@ -143,16 +143,16 @@ resources:
               ResponsePagePath: /index.html
               ErrorCachingMinTTL: 0
           # Custom domain configuration using the ACM certificate from main-infra
-          # For production stage, also add root domain (pinohub.com)
+          # For production stage, also add root domain
           Aliases:
             Fn::If:
               - IsProduction
               - - ${self:custom.frontendDomain}
-                - ${self:custom.pinohubDomain}
+                - ${self:custom.Domain}
               - - ${self:custom.frontendDomain}
           ViewerCertificate:
             # Certificate ARN is obtained from main-infra via SSM parameter
-            AcmCertificateArn: ${self:custom.pinohubCertificateArn}
+            AcmCertificateArn: ${self:custom.grcCertificateArn}
             SslSupportMethod: sni-only
             MinimumProtocolVersion: TLSv1.2_2021
           Restrictions:
@@ -199,21 +199,21 @@ resources:
       Export:
         Name: ${self:service}-${self:provider.stage}-cloudfront-url
 
-    # Pinohub.com Frontend Domain URL (HTTPS)
-    PinohubFrontendUrl:
-      Description: "Full HTTPS URL for Pinohub.com frontend domain"
+    # GRC Frontend Domain URL (HTTPS)
+    GrcFrontendUrl:
+      Description: "Full HTTPS URL for GRC frontend domain"
       Value:
         Fn::Join:
           - ""
           - - "https://"
             - ${self:custom.frontendDomain}
       Export:
-        Name: ${self:service}-${self:provider.stage}-pinohub-frontend-url
+        Name: ${self:service}-${self:provider.stage}-grc-frontend-url
 
-    # Pinohub.com Frontend Domain Name
-    PinohubFrontendDomain:
-      Description: "Pinohub.com frontend domain name"
+    # GRC Frontend Domain Name
+    GrcFrontendDomain:
+      Description: "GRC frontend domain name"
       Value: ${self:custom.frontendDomain}
       Export:
-        Name: ${self:service}-${self:provider.stage}-pinohub-frontend-domain
+        Name: ${self:service}-${self:provider.stage}-grc-frontend-domain
 

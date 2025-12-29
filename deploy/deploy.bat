@@ -1,12 +1,12 @@
 @echo off
-REM Simple Deploy Script - FAMI Landing Page
+REM Simple Deploy Script - GRC Landing Page
 
 set STAGE=%1
 if "%STAGE%"=="" set STAGE=dev
-set BUCKET_NAME=fami-%STAGE%
+set BUCKET_NAME=grc-landing-%STAGE%
 set REGION=us-east-1
 
-echo Desplegando FAMI Landing Page...
+echo Desplegando GRC Landing Page...
 
 REM Verificar credenciales básicas
 if "%AWS_ACCESS_KEY_ID%"=="" (
@@ -73,7 +73,7 @@ REM Crear distribución CloudFront
 echo Creando distribucion CloudFront (HTTPS)...
 echo { > cloudfront-config.json
 echo   "CallerReference": "%BUCKET_NAME%-%RANDOM%", >> cloudfront-config.json
-echo   "Comment": "FAMI Landing Page - %STAGE%", >> cloudfront-config.json
+echo   "Comment": "GRC Landing Page - %STAGE%", >> cloudfront-config.json
 echo   "DefaultRootObject": "index.html", >> cloudfront-config.json
 echo   "Origins": { >> cloudfront-config.json
 echo     "Quantity": 1, >> cloudfront-config.json
