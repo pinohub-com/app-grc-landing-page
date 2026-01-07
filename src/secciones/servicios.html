@@ -30,29 +30,29 @@
                     </svg>
 
                     <div class="servicio-step servicio-step-1">
-                        <div class="servicio-title">Consumo</div>
                         <img src="img/servicios/consumo.png" alt="Consumo">
+                        <div class="servicio-title">Consumo</div>
                     </div>
 
                     <div class="servicio-step servicio-step-2">
-                        <div class="servicio-title">Crédito Hipotecario y de Vehículo</div>
                         <img src="img/servicios/creditohipotecarioydevehiculo.png" alt="Crédito Hipotecario">
+                        <div class="servicio-title">Crédito Hipotecario y de Vehículo</div>
                     </div>
 
                     <div class="servicio-step servicio-step-3">
-                        <div class="servicio-title">Crédito para Pensionados, Reportados y No Reportados</div>
                         <img src="img/servicios/creditosparapensionadosreportadosynoreportados.png"
                             alt="Crédito para pensionados">
+                        <div class="servicio-title">Crédito para Pensionados, Reportados y No Reportados</div>
                     </div>
 
                     <div class="servicio-step servicio-step-4">
-                        <div class="servicio-title">Medicina prepagada y seguros</div>
                         <img src="img/servicios/medicinaprepagadayseguros.png" alt="Medicina prepagada y seguros">
+                        <div class="servicio-title">Medicina prepagada y seguros</div>
                     </div>
 
                     <div class="servicio-step servicio-step-5">
-                        <div class="servicio-title">Viajes y turismo</div>
                         <img src="img/servicios/viajesyturismo.png" alt="Viajes y turismo">
+                        <div class="servicio-title">Viajes y turismo</div>
                     </div>
                 </div>
             </div>
@@ -77,10 +77,11 @@
         width: 100%;
         height: 100%;
         animation: spin 60s linear infinite;
-        /* Animación lenta opcional */
+        z-index: 0;
+        opacity: 0.4;
+        pointer-events: none;
     }
 
-    /* Estilos de tus elementos originales */
     .servicio-step {
         position: absolute;
         text-align: center;
@@ -88,10 +89,11 @@
         flex-direction: column;
         align-items: center;
         gap: 10px;
-        /* IMPORTANTE: Centra el elemento en la coordenada */
         transform: translate(-50%, -50%);
         width: 140px;
         z-index: 2;
+        cursor: pointer;
+        transition: all 0.3s ease;
     }
 
     .servicio-title {
@@ -100,7 +102,6 @@
         color: #4A90E2;
         line-height: 1.2;
         text-shadow: 0 0 10px #fff;
-        /* Sombra blanca para leer mejor sobre líneas */
     }
 
     .servicio-step img {
@@ -109,51 +110,47 @@
         border-radius: 50%;
         object-fit: cover;
         border: 4px solid #fff;
-        /* Borde blanco para separar de las líneas */
         outline: 2px solid #4A90E2;
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
         background: white;
-        transition: transform 0.3s ease;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .servicio-step:hover {
+        z-index: 10;
     }
 
     .servicio-step:hover img {
         transform: scale(1.1);
+        box-shadow: 0 0 0 4px rgba(74, 144, 226, 0.1), 0 10px 25px rgba(74, 144, 226, 0.35);
+        outline-color: #0056b3;
     }
 
-    /* COORDENADAS PENTAGONALES (5 Puntos) 
-       Calculadas para caer sobre el círculo exterior (Radio 280 / Canvas 700)
-    */
-
+    /* Coordenadas pentagonales (5 puntos) */
     .servicio-step-1 {
         left: 50%;
         top: 10%;
     }
 
-    /* Arriba */
     .servicio-step-2 {
         left: 88%;
         top: 38%;
     }
 
-    /* Derecha Arriba */
     .servicio-step-3 {
         left: 73.5%;
         top: 82%;
     }
 
-    /* Derecha Abajo */
     .servicio-step-4 {
         left: 26.5%;
         top: 82%;
     }
 
-    /* Izquierda Abajo */
     .servicio-step-5 {
         left: 12%;
         top: 38%;
     }
-
-    /* Izquierda Arriba */
 
     @keyframes spin {
         from {
@@ -165,21 +162,79 @@
         }
     }
 
+    /* RESPONSIVE: Mobile Layout (similar a pensionados) */
     @media (max-width: 768px) {
         .servicios-cycle-wrapper {
-            max-width: 350px;
+            width: 100%;
+            max-width: 400px;
+            height: auto;
+            aspect-ratio: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            padding: 0;
         }
 
-        .servicio-step img {
-            width: 105px;
-            height: 105px;
-        }
-
-        .servicio-title {
-            font-size: 0.7rem;
+        .cycle-arrows-svg {
             display: none;
         }
 
-        /* Ocultar título en móviles pequeños */
+        .servicio-step {
+            position: relative !important;
+            top: auto !important;
+            left: auto !important;
+            transform: none !important;
+            width: 100%;
+            height: auto;
+            flex-direction: row;
+            gap: 1rem;
+            padding: 1.5rem;
+            text-align: left;
+            justify-content: flex-start;
+            background: linear-gradient(135deg, #F5F7F6 0%, #ffffff 100%);
+            border-radius: 12px;
+            border-left: 4px solid #4A90E2;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        }
+
+        .servicio-step:hover {
+            transform: translateY(-3px) !important;
+            box-shadow: 0 8px 25px rgba(74, 144, 226, 0.2);
+        }
+
+        .servicio-step img {
+            width: 80px;
+            height: 80px;
+            flex-shrink: 0;
+            border: 3px solid #fff;
+            outline: 2px solid #4A90E2;
+        }
+
+        .servicio-step:hover img {
+            transform: scale(1.05);
+        }
+
+        .servicio-title {
+            font-size: 0.95rem;
+            text-align: left;
+            text-shadow: none;
+            flex: 1;
+            display: block;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .servicio-step {
+            padding: 1.2rem;
+        }
+
+        .servicio-step img {
+            width: 70px;
+            height: 70px;
+        }
+
+        .servicio-title {
+            font-size: 0.85rem;
+        }
     }
 </style>

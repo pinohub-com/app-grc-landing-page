@@ -1,0 +1,9 @@
+{
+  "WebsiteBucketName": "grc-landing-dev-website-221723377815",
+  "CloudFrontDistributionDomain": "d1dahx235g6vmj.cloudfront.net",
+  "CloudFrontDistributionId": "E2I1OT9KLK6YPB",
+  "CloudFrontDistributionUrl": "https://d1dahx235g6vmj.cloudfront.net",
+  "GrcFrontendUrl": "https://landing-dev.gruporeal.com.co",
+  "GrcFrontendDomain": "landing-dev.gruporeal.com.co",
+  "ServerlessDeploymentBucketName": "serverless-framework-deployments-us-east-1-19b808f0-569e"
+}

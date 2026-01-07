@@ -2,7 +2,6 @@
 // Esperar a que las secciones se carguen
 // ===================================
 document.addEventListener('sectionsLoaded', function() {
-    console.log('🚀 Inicializando funcionalidad de la página...');
     initializeApp();
 });
 

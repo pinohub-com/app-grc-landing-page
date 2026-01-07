@@ -15,7 +15,7 @@ provider:
 
 # Custom configuration
 custom:
-  Domain: gruporeal.com.co
+  Domain: gruporealcolombia.com
   # Serverless stack output plugin configuration
   output:
     file: .serverless/stack-output-${self:provider.stage}.json
@@ -27,22 +27,22 @@ functions: {}
 # Resources for shared domain infrastructure
 resources:
   Resources:
-    # Route 53 Hosted Zone for gruporeal.com.co
+    # Route 53 Hosted Zone for ${self:custom.Domain}
     # This is created ONCE and shared across all applications
     HostedZone:
       Type: AWS::Route53::HostedZone
       Properties:
         Name: ${self:custom.Domain}
         HostedZoneConfig:
-          Comment: Shared hosted zone for gruporeal.com.co - used by all applications
+          Comment: Shared hosted zone for ${self:custom.Domain} - used by all applications
         Tags:
           - Key: ManagedBy
             Value: ServerlessFramework
           - Key: Purpose
             Value: SharedDomainInfrastructure
 
-    # ACM Certificate for gruporeal.com.co (must be in us-east-1 for CloudFront)
-    # Includes both root domain (gruporeal.com.co) and wildcard (*.gruporeal.com.co) to cover all subdomains
+    # ACM Certificate for ${self:custom.Domain} (must be in us-east-1 for CloudFront)
+    # Includes both root domain (${self:custom.Domain}) and wildcard (*.${self:custom.Domain}) to cover all subdomains
     #
     # IMPORTANT: DomainValidationOptions with HostedZoneId is NOT specified to avoid conflicts
     # with existing validation records. If the certificate is already validated (via Porkbun),
@@ -67,7 +67,7 @@ resources:
           - Key: Purpose
             Value: SharedDomainInfrastructure
 
-    # SSM Parameters for gruporeal.com.co domain configuration
+    # SSM Parameters for ${self:custom.Domain} domain configuration
     # These are stage-agnostic since the hosted zone and certificate are shared across all environments
     HostedZoneIdParameter:
       Type: AWS::SSM::Parameter
@@ -75,7 +75,7 @@ resources:
         Name: /grc/hosted-zone-id
         Type: String
         Value: !Ref HostedZone
-        Description: Route 53 Hosted Zone ID for gruporeal.com.co (shared across all stages)
+        Description: Route 53 Hosted Zone ID for ${self:custom.Domain} (shared across all stages)
         Tags:
           ManagedBy: ServerlessFramework
           Purpose: SharedDomainInfrastructure
@@ -88,7 +88,7 @@ resources:
         Value: !Join
           - ', '
           - !GetAtt HostedZone.NameServers
-        Description: Route 53 Name Servers for gruporeal.com.co - Update these at domain registrar (comma-separated, shared across all stages)
+        Description: Route 53 Name Servers for ${self:custom.Domain} - Update these at domain registrar (comma-separated, shared across all stages)
         Tags:
           ManagedBy: ServerlessFramework
           Purpose: SharedDomainInfrastructure
@@ -99,7 +99,7 @@ resources:
         Name: /grc/certificate-arn
         Type: String
         Value: !Ref Certificate
-        Description: ACM Certificate ARN for gruporeal.com.co (us-east-1) - Use in CloudFront (shared across all stages)
+        Description: ACM Certificate ARN for ${self:custom.Domain} (us-east-1) - Use in CloudFront (shared across all stages)
         Tags:
           ManagedBy: ServerlessFramework
           Purpose: SharedDomainInfrastructure
@@ -110,13 +110,13 @@ resources:
         Name: /grc/domain-name
         Type: String
         Value: ${self:custom.Domain}
-        Description: Domain name (gruporeal.com.co, shared across all stages)
+        Description: Domain name (${self:custom.Domain}, shared across all stages)
         Tags:
           ManagedBy: ServerlessFramework
           Purpose: SharedDomainInfrastructure
 
-    # SES Email Identity for gruporeal.com.co domain
-    # This allows sending emails from any address @gruporeal.com.co (e.g., noreply@gruporeal.com.co, support@gruporeal.com.co)
+    # SES Email Identity for ${self:custom.Domain} domain
+    # This allows sending emails from any address @${self:custom.Domain} (e.g., noreply@${self:custom.Domain}, support@${self:custom.Domain})
     # DKIM signing will be enabled automatically, and DKIM records can be added to Route 53 for better deliverability
     # SESIdentity:
     #   Type: AWS::SES::EmailIdentity
@@ -156,7 +156,7 @@ resources:
     #     Name: /grc/ses-identity-arn
     #     Type: String
     #     Value: !Ref SESIdentity
-    #     Description: SES Email Identity ARN for gruporeal.com.co (shared across all stages)
+    #     Description: SES Email Identity ARN for ${self:custom.Domain} (shared across all stages)
     #     Tags:
     #       ManagedBy: ServerlessFramework
     #       Purpose: SharedDomainInfrastructure
@@ -168,21 +168,21 @@ resources:
         Name: /grc/ses-identity-name
         Type: String
         Value: ${self:custom.Domain}
-        Description: SES Email Identity name (gruporeal.com.co, shared across all stages)
+        Description: SES Email Identity name (${self:custom.Domain}, shared across all stages)
         Tags:
           ManagedBy: ServerlessFramework
           Purpose: SharedDomainInfrastructure
 
   Outputs:
-    # gruporeal.com.co Outputs (stage-agnostic - shared across all environments)
+    # ${self:custom.Domain} Outputs (stage-agnostic - shared across all environments)
     HostedZoneId:
-      Description: "Route 53 Hosted Zone ID for gruporeal.com.co (shared across all stages)"
+      Description: "Route 53 Hosted Zone ID for ${self:custom.Domain} (shared across all stages)"
       Value: !Ref HostedZone
       Export:
         Name: ${self:service}-hosted-zone-id
 
     HostedZoneNameServers:
-      Description: "Route 53 Name Servers for gruporeal.com.co - Update these at domain registrar (shared across all stages)"
+      Description: "Route 53 Name Servers for ${self:custom.Domain} - Update these at domain registrar (shared across all stages)"
       Value: !Join
         - ', '
         - !GetAtt HostedZone.NameServers
@@ -190,25 +190,25 @@ resources:
         Name: ${self:service}-name-servers
 
     CertificateArn:
-      Description: "ACM Certificate ARN for gruporeal.com.co (us-east-1) - Use in CloudFront (shared across all stages)"
+      Description: "ACM Certificate ARN for ${self:custom.Domain} (us-east-1) - Use in CloudFront (shared across all stages)"
       Value: !Ref Certificate
       Export:
         Name: ${self:service}-certificate-arn
 
     DomainName:
-      Description: "Domain name (gruporeal.com.co, shared across all stages)"
+      Description: "Domain name (${self:custom.Domain}, shared across all stages)"
       Value: ${self:custom.Domain}
       Export:
         Name: ${self:service}-domain-name
 
     # SESIdentityArn:
-    #   Description: "SES Email Identity ARN for gruporeal.com.co (shared across all stages)"
+    #   Description: "SES Email Identity ARN for ${self:custom.Domain} (shared across all stages)"
     #   Value: !Ref SESIdentity
     #   Export:
     #     Name: ${self:service}-ses-identity-arn
 
     SESIdentityName:
-      Description: "SES Email Identity name (gruporeal.com.co, shared across all stages)"
+      Description: "SES Email Identity name (${self:custom.Domain}, shared across all stages)"
       Value: ${self:custom.Domain}
       Export:
         Name: ${self:service}-ses-identity-name

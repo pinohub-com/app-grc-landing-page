@@ -1,7 +1,7 @@
 {
   "name": "grc-main-infrastructure",
   "version": "1.0.0",
-  "description": "Shared infrastructure for gruporeal.com.co domain - Hosted Zone, ACM Certificate, and SES Identity",
+  "description": "Shared infrastructure for gruporealcolombia.com domain - Hosted Zone, ACM Certificate, and SES Identity",
   "scripts": {
     "deploy": "cross-env AWS_PROFILE=pinohub serverless deploy",
     "deploy:dev": "cross-env AWS_PROFILE=pinohub serverless deploy --verbose --stage dev",

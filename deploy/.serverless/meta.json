@@ -1,0 +1,373 @@
+{
+  "M:\\Pinohub\\landings\\app-grc-landing-page\\deploy\\serverless.yml": {
+    "versionFramework": "4.29.4",
+    "servicePath": "M:\\Pinohub\\landings\\app-grc-landing-page\\deploy\\serverless.yml",
+    "serviceConfigFileName": "serverless.yml",
+    "service": {
+      "service": "grc-landing",
+      "frameworkVersion": "4",
+      "plugins": [
+        "serverless-stack-output"
+      ],
+      "provider": {
+        "name": "aws",
+        "runtime": "provided.al2",
+        "stage": "dev",
+        "region": "us-east-1",
+        "stackName": "grc-landing-dev",
+        "versionFunctions": true
+      },
+      "custom": {
+        "output": {
+          "file": ".serverless/stack-output-dev.json",
+          "handler": false,
+          "mode": "merge"
+        },
+        "Domain": "gruporeal.com.co",
+        "grcHostedZoneId": "Z0011770BRA6NDS5I3CL",
+        "grcCertificateArn": "arn:aws:acm:us-east-1:221723377815:certificate/b781cd8f-c8b1-4986-9a31-4d78c57c4081",
+        "frontendSubdomain": "landing-dev",
+        "frontendDomain": "landing-dev.gruporeal.com.co",
+        "websiteBucketName": "grc-landing-dev-website-221723377815"
+      },
+      "functions": {},
+      "resources": {
+        "Conditions": {
+          "IsProduction": {
+            "Fn::Equals": [
+              "dev",
+              "prod"
+            ]
+          }
+        },
+        "Resources": {
+          "WebsiteBucket": {
+            "Type": "AWS::S3::Bucket",
+            "Properties": {
+              "BucketName": "grc-landing-dev-website-221723377815",
+              "PublicAccessBlockConfiguration": {
+                "BlockPublicAcls": true,
+                "BlockPublicPolicy": true,
+                "IgnorePublicAcls": true,
+                "RestrictPublicBuckets": true
+              },
+              "CorsConfiguration": {
+                "CorsRules": [
+                  {
+                    "AllowedHeaders": [
+                      "*"
+                    ],
+                    "AllowedMethods": [
+                      "GET",
+                      "HEAD"
+                    ],
+                    "AllowedOrigins": [
+                      "*"
+                    ],
+                    "MaxAge": 3600,
+                    "ExposedHeaders": [
+                      "ETag"
+                    ]
+                  }
+                ]
+              }
+            }
+          },
+          "WebsiteBucketPolicy": {
+            "Type": "AWS::S3::BucketPolicy",
+            "DependsOn": [
+              "WebsiteBucket",
+              "CloudFrontDistribution"
+            ],
+            "Properties": {
+              "Bucket": {
+                "Ref": "WebsiteBucket"
+              },
+              "PolicyDocument": {
+                "Version": "2012-10-17",
+                "Statement": [
+                  {
+                    "Sid": "AllowCloudFrontOAC",
+                    "Effect": "Allow",
+                    "Principal": {
+                      "Service": "cloudfront.amazonaws.com"
+                    },
+                    "Action": "s3:GetObject",
+                    "Resource": {
+                      "Fn::Sub": "arn:aws:s3:::${WebsiteBucket}/*"
+                    },
+                    "Condition": {
+                      "StringEquals": {
+                        "AWS:SourceArn": {
+                          "Fn::Sub": "arn:aws:cloudfront::${AWS::AccountId}:distribution/${CloudFrontDistribution}"
+                        }
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          "CloudFrontOriginAccessControl": {
+            "Type": "AWS::CloudFront::OriginAccessControl",
+            "Properties": {
+              "OriginAccessControlConfig": {
+                "Name": "grc-landing-dev-oac",
+                "OriginAccessControlOriginType": "s3",
+                "SigningBehavior": "always",
+                "SigningProtocol": "sigv4",
+                "Description": "OAC for grc-landing-dev website"
+              }
+            }
+          },
+          "CloudFrontDistribution": {
+            "Type": "AWS::CloudFront::Distribution",
+            "DependsOn": [
+              "WebsiteBucket",
+              "CloudFrontOriginAccessControl"
+            ],
+            "Properties": {
+              "DistributionConfig": {
+                "Comment": "CloudFront distribution for grc-landing-dev static website",
+                "Enabled": true,
+                "HttpVersion": "http2and3",
+                "IPV6Enabled": true,
+                "PriceClass": "PriceClass_100",
+                "DefaultRootObject": "index.html",
+                "Origins": [
+                  {
+                    "Id": "S3-grc-landing-dev-website-221723377815",
+                    "DomainName": {
+                      "Fn::GetAtt": [
+                        "WebsiteBucket",
+                        "RegionalDomainName"
+                      ]
+                    },
+                    "S3OriginConfig": {},
+                    "OriginAccessControlId": {
+                      "Fn::GetAtt": [
+                        "CloudFrontOriginAccessControl",
+                        "Id"
+                      ]
+                    }
+                  }
+                ],
+                "DefaultCacheBehavior": {
+                  "TargetOriginId": "S3-grc-landing-dev-website-221723377815",
+                  "ViewerProtocolPolicy": "redirect-to-https",
+                  "AllowedMethods": [
+                    "GET",
+                    "HEAD",
+                    "OPTIONS"
+                  ],
+                  "CachedMethods": [
+                    "GET",
+                    "HEAD"
+                  ],
+                  "ForwardedValues": {
+                    "QueryString": false,
+                    "Cookies": {
+                      "Forward": "none"
+                    }
+                  },
+                  "MinTTL": 0,
+                  "DefaultTTL": 86400,
+                  "MaxTTL": 31536000,
+                  "Compress": true
+                },
+                "CustomErrorResponses": [
+                  {
+                    "ErrorCode": 403,
+                    "ResponseCode": 200,
+                    "ResponsePagePath": "/index.html",
+                    "ErrorCachingMinTTL": 0
+                  },
+                  {
+                    "ErrorCode": 404,
+                    "ResponseCode": 200,
+                    "ResponsePagePath": "/index.html",
+                    "ErrorCachingMinTTL": 0
+                  }
+                ],
+                "Aliases": {
+                  "Fn::If": [
+                    "IsProduction",
+                    [
+                      "landing-dev.gruporeal.com.co",
+                      "gruporeal.com.co"
+                    ],
+                    [
+                      "landing-dev.gruporeal.com.co"
+                    ]
+                  ]
+                },
+                "ViewerCertificate": {
+                  "AcmCertificateArn": "arn:aws:acm:us-east-1:221723377815:certificate/b781cd8f-c8b1-4986-9a31-4d78c57c4081",
+                  "SslSupportMethod": "sni-only",
+                  "MinimumProtocolVersion": "TLSv1.2_2021"
+                },
+                "Restrictions": {
+                  "GeoRestriction": {
+                    "RestrictionType": "none"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "Outputs": {
+          "WebsiteBucketName": {
+            "Description": "Name of the S3 bucket for website hosting",
+            "Value": {
+              "Ref": "WebsiteBucket"
+            },
+            "Export": {
+              "Name": "grc-landing-dev-website-bucket"
+            }
+          },
+          "CloudFrontDistributionId": {
+            "Description": "CloudFront Distribution ID for static website",
+            "Value": {
+              "Ref": "CloudFrontDistribution"
+            },
+            "Export": {
+              "Name": "grc-landing-dev-cloudfront-distribution-id"
+            }
+          },
+          "CloudFrontDistributionDomain": {
+            "Description": "CloudFront Distribution Domain Name (HTTPS URL)",
+            "Value": {
+              "Fn::GetAtt": [
+                "CloudFrontDistribution",
+                "DomainName"
+              ]
+            },
+            "Export": {
+              "Name": "grc-landing-dev-cloudfront-domain"
+            }
+          },
+          "CloudFrontDistributionUrl": {
+            "Description": "Full HTTPS URL for CloudFront Distribution",
+            "Value": {
+              "Fn::Join": [
+                "",
+                [
+                  "https://",
+                  {
+                    "Fn::GetAtt": [
+                      "CloudFrontDistribution",
+                      "DomainName"
+                    ]
+                  }
+                ]
+              ]
+            },
+            "Export": {
+              "Name": "grc-landing-dev-cloudfront-url"
+            }
+          },
+          "GrcFrontendUrl": {
+            "Description": "Full HTTPS URL for GRC frontend domain",
+            "Value": {
+              "Fn::Join": [
+                "",
+                [
+                  "https://",
+                  "landing-dev.gruporeal.com.co"
+                ]
+              ]
+            },
+            "Export": {
+              "Name": "grc-landing-dev-grc-frontend-url"
+            }
+          },
+          "GrcFrontendDomain": {
+            "Description": "GRC frontend domain name",
+            "Value": "landing-dev.gruporeal.com.co",
+            "Export": {
+              "Name": "grc-landing-dev-grc-frontend-domain"
+            }
+          }
+        }
+      }
+    },
+    "provider": {
+      "name": "aws",
+      "runtime": "provided.al2",
+      "stage": "dev",
+      "region": "us-east-1",
+      "stackName": "grc-landing-dev",
+      "versionFunctions": true
+    },
+    "dashboard": {
+      "isEnabledForService": false,
+      "requiredAuthentication": false,
+      "orgFeaturesInUse": null,
+      "orgObservabilityIntegrations": null,
+      "serviceAppId": null,
+      "serviceProvider": null,
+      "instanceParameters": null
+    },
+    "serviceRawFile": "service: grc-landing\r\n\r\nframeworkVersion: '4'\r\n\r\nplugins:\r\n  - serverless-stack-output\r\n\r\nprovider:\r\n  name: aws\r\n  runtime: provided.al2  # Not used, but required by Serverless Framework\r\n  stage: ${opt:stage, 'dev'}\r\n  region: ${opt:region, 'us-east-1'}\r\n  stackName: grc-landing-${self:provider.stage}\r\n\r\n# Custom configuration\r\ncustom:\r\n  # Serverless stack output plugin configuration\r\n  output:\r\n    file: .serverless/stack-output-${self:provider.stage}.json\r\n    handler: false\r\n    mode: merge\r\n  \r\n  # GRC domain configuration - values from main-infra SSM parameters\r\n  # These are stage-agnostic since the hosted zone and certificate are shared across all environments\r\n  Domain: ${ssm:/grc/domain-name}\r\n  grcHostedZoneId: ${ssm:/grc/hosted-zone-id}\r\n  grcCertificateArn: ${ssm:/grc/certificate-arn}\r\n  \r\n  # Subdomain configuration\r\n  frontendSubdomain: landing-${self:provider.stage}\r\n  frontendDomain: ${self:custom.frontendSubdomain}.${self:custom.Domain}\r\n  \r\n  # S3 Bucket name with account ID\r\n  websiteBucketName: ${self:service}-${self:provider.stage}-website-${aws:accountId}\r\n\r\n# No functions needed - this is a static site\r\nfunctions: {}\r\n\r\n# Resources for static website hosting\r\nresources:\r\n  Conditions:\r\n    # Condition to check if this is production stage\r\n    IsProduction: !Equals ['${self:provider.stage}', 'prod']\r\n  \r\n  Resources:\r\n    # S3 Bucket for hosting static website\r\n    WebsiteBucket:\r\n      Type: AWS::S3::Bucket\r\n      Properties:\r\n        BucketName: ${self:custom.websiteBucketName}\r\n        PublicAccessBlockConfiguration:\r\n          BlockPublicAcls: true\r\n          BlockPublicPolicy: true\r\n          IgnorePublicAcls: true\r\n          RestrictPublicBuckets: true\r\n        CorsConfiguration:\r\n          CorsRules:\r\n            - AllowedHeaders: ['*']\r\n              AllowedMethods: [GET, HEAD]\r\n              AllowedOrigins: ['*']\r\n              MaxAge: 3600\r\n              ExposedHeaders: ['ETag']\r\n\r\n    # S3 Bucket Policy for CloudFront OAC access\r\n    WebsiteBucketPolicy:\r\n      Type: AWS::S3::BucketPolicy\r\n      DependsOn: \r\n        - WebsiteBucket\r\n        - CloudFrontDistribution\r\n      Properties:\r\n        Bucket: !Ref WebsiteBucket\r\n        PolicyDocument:\r\n          Version: '2012-10-17'\r\n          Statement:\r\n            # Allow CloudFront OAC to read objects\r\n            - Sid: AllowCloudFrontOAC\r\n              Effect: Allow\r\n              Principal:\r\n                Service: cloudfront.amazonaws.com\r\n              Action: 's3:GetObject'\r\n              Resource: !Sub 'arn:aws:s3:::${WebsiteBucket}/*'\r\n              Condition:\r\n                StringEquals:\r\n                  'AWS:SourceArn': !Sub 'arn:aws:cloudfront::${AWS::AccountId}:distribution/${CloudFrontDistribution}'\r\n\r\n    # CloudFront Origin Access Control (OAC) for S3 access\r\n    CloudFrontOriginAccessControl:\r\n      Type: AWS::CloudFront::OriginAccessControl\r\n      Properties:\r\n        OriginAccessControlConfig:\r\n          Name: ${self:service}-${self:provider.stage}-oac\r\n          OriginAccessControlOriginType: s3\r\n          SigningBehavior: always\r\n          SigningProtocol: sigv4\r\n          Description: OAC for ${self:service}-${self:provider.stage} website\r\n\r\n    # CloudFront Distribution for static website\r\n    CloudFrontDistribution:\r\n      Type: AWS::CloudFront::Distribution\r\n      DependsOn: \r\n        - WebsiteBucket\r\n        - CloudFrontOriginAccessControl\r\n      Properties:\r\n        DistributionConfig:\r\n          Comment: CloudFront distribution for ${self:service}-${self:provider.stage} static website\r\n          Enabled: true\r\n          HttpVersion: http2and3\r\n          IPV6Enabled: true\r\n          PriceClass: PriceClass_100\r\n          DefaultRootObject: index.html\r\n          Origins:\r\n            - Id: S3-${self:custom.websiteBucketName}\r\n              DomainName: !GetAtt WebsiteBucket.RegionalDomainName\r\n              S3OriginConfig: {}\r\n              OriginAccessControlId: !GetAtt CloudFrontOriginAccessControl.Id\r\n          DefaultCacheBehavior:\r\n            TargetOriginId: S3-${self:custom.websiteBucketName}\r\n            ViewerProtocolPolicy: redirect-to-https\r\n            AllowedMethods:\r\n              - GET\r\n              - HEAD\r\n              - OPTIONS\r\n            CachedMethods:\r\n              - GET\r\n              - HEAD\r\n            ForwardedValues:\r\n              QueryString: false\r\n              Cookies:\r\n                Forward: none\r\n            MinTTL: 0\r\n            DefaultTTL: 86400\r\n            MaxTTL: 31536000\r\n            Compress: true\r\n          # Custom error responses for SPA routing\r\n          # These ensure that all routes serve index.html\r\n          CustomErrorResponses:\r\n            - ErrorCode: 403\r\n              ResponseCode: 200\r\n              ResponsePagePath: /index.html\r\n              ErrorCachingMinTTL: 0\r\n            - ErrorCode: 404\r\n              ResponseCode: 200\r\n              ResponsePagePath: /index.html\r\n              ErrorCachingMinTTL: 0\r\n          # Custom domain configuration using the ACM certificate from main-infra\r\n          # For production stage, also add root domain\r\n          Aliases:\r\n            Fn::If:\r\n              - IsProduction\r\n              - - ${self:custom.frontendDomain}\r\n                - ${self:custom.Domain}\r\n              - - ${self:custom.frontendDomain}\r\n          ViewerCertificate:\r\n            # Certificate ARN is obtained from main-infra via SSM parameter\r\n            AcmCertificateArn: ${self:custom.grcCertificateArn}\r\n            SslSupportMethod: sni-only\r\n            MinimumProtocolVersion: TLSv1.2_2021\r\n          Restrictions:\r\n            GeoRestriction:\r\n              RestrictionType: none\r\n\r\n  Outputs:\r\n    # S3 Bucket Name\r\n    WebsiteBucketName:\r\n      Description: \"Name of the S3 bucket for website hosting\"\r\n      Value:\r\n        Ref: WebsiteBucket\r\n      Export:\r\n        Name: ${self:service}-${self:provider.stage}-website-bucket\r\n    \r\n    # CloudFront Distribution ID\r\n    CloudFrontDistributionId:\r\n      Description: \"CloudFront Distribution ID for static website\"\r\n      Value:\r\n        Ref: CloudFrontDistribution\r\n      Export:\r\n        Name: ${self:service}-${self:provider.stage}-cloudfront-distribution-id\r\n    \r\n    # CloudFront Distribution Domain Name\r\n    CloudFrontDistributionDomain:\r\n      Description: \"CloudFront Distribution Domain Name (HTTPS URL)\"\r\n      Value:\r\n        Fn::GetAtt:\r\n          - CloudFrontDistribution\r\n          - DomainName\r\n      Export:\r\n        Name: ${self:service}-${self:provider.stage}-cloudfront-domain\r\n    \r\n    # CloudFront Distribution URL (HTTPS)\r\n    CloudFrontDistributionUrl:\r\n      Description: \"Full HTTPS URL for CloudFront Distribution\"\r\n      Value:\r\n        Fn::Join:\r\n          - \"\"\r\n          - - \"https://\"\r\n            - Fn::GetAtt:\r\n                - CloudFrontDistribution\r\n                - DomainName\r\n      Export:\r\n        Name: ${self:service}-${self:provider.stage}-cloudfront-url\r\n\r\n    # GRC Frontend Domain URL (HTTPS)\r\n    GrcFrontendUrl:\r\n      Description: \"Full HTTPS URL for GRC frontend domain\"\r\n      Value:\r\n        Fn::Join:\r\n          - \"\"\r\n          - - \"https://\"\r\n            - ${self:custom.frontendDomain}\r\n      Export:\r\n        Name: ${self:service}-${self:provider.stage}-grc-frontend-url\r\n\r\n    # GRC Frontend Domain Name\r\n    GrcFrontendDomain:\r\n      Description: \"GRC frontend domain name\"\r\n      Value: ${self:custom.frontendDomain}\r\n      Export:\r\n        Name: ${self:service}-${self:provider.stage}-grc-frontend-domain\r\n\r\n",
+    "command": [
+      "info"
+    ],
+    "options": {
+      "stage": "dev",
+      "region": "us-east-1"
+    },
+    "orgId": "9a6a3604-00aa-4777-bf2a-d46b19b3d236",
+    "orgName": "pinohubbastidas",
+    "userId": "tyVwNqSd9mWgbF1nr5",
+    "userName": "pinohubbastidas",
+    "serviceProviderAwsAccountId": "221723377815",
+    "serviceProviderAwsCfStackName": "grc-landing-dev",
+    "serviceProviderAwsCfStackId": "arn:aws:cloudformation:us-east-1:221723377815:stack/grc-landing-dev/6649f5b0-e4d7-11f0-b9cf-1259a6cc5049",
+    "serviceProviderAwsCfStackCreated": "2025-12-29T16:57:03.523Z",
+    "serviceProviderAwsCfStackUpdated": null,
+    "serviceProviderAwsCfStackStatus": "CREATE_COMPLETE",
+    "serviceProviderAwsCfStackOutputs": [
+      {
+        "OutputKey": "WebsiteBucketName",
+        "OutputValue": "grc-landing-dev-website-221723377815",
+        "Description": "Name of the S3 bucket for website hosting",
+        "ExportName": "grc-landing-dev-website-bucket"
+      },
+      {
+        "OutputKey": "CloudFrontDistributionDomain",
+        "OutputValue": "d1dahx235g6vmj.cloudfront.net",
+        "Description": "CloudFront Distribution Domain Name (HTTPS URL)",
+        "ExportName": "grc-landing-dev-cloudfront-domain"
+      },
+      {
+        "OutputKey": "CloudFrontDistributionId",
+        "OutputValue": "E2I1OT9KLK6YPB",
+        "Description": "CloudFront Distribution ID for static website",
+        "ExportName": "grc-landing-dev-cloudfront-distribution-id"
+      },
+      {
+        "OutputKey": "CloudFrontDistributionUrl",
+        "OutputValue": "https://d1dahx235g6vmj.cloudfront.net",
+        "Description": "Full HTTPS URL for CloudFront Distribution",
+        "ExportName": "grc-landing-dev-cloudfront-url"
+      },
+      {
+        "OutputKey": "GrcFrontendUrl",
+        "OutputValue": "https://landing-dev.gruporeal.com.co",
+        "Description": "Full HTTPS URL for GRC frontend domain",
+        "ExportName": "grc-landing-dev-grc-frontend-url"
+      },
+      {
+        "OutputKey": "GrcFrontendDomain",
+        "OutputValue": "landing-dev.gruporeal.com.co",
+        "Description": "GRC frontend domain name",
+        "ExportName": "grc-landing-dev-grc-frontend-domain"
+      },
+      {
+        "OutputKey": "ServerlessDeploymentBucketName",
+        "OutputValue": "serverless-framework-deployments-us-east-1-19b808f0-569e",
+        "ExportName": "sls-grc-landing-dev-ServerlessDeploymentBucketName"
+      }
+    ]
+  }
+}

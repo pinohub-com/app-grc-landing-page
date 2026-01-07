@@ -51,7 +51,6 @@ const Loader = {
             const html = await response.text();
             container.innerHTML = html;
 
-            console.log(`✓ Sección cargada: ${fileName}`);
         } catch (error) {
             console.error(`Error cargando ${fileName}:`, error);
             const container = document.getElementById(containerId);
@@ -65,7 +64,6 @@ const Loader = {
      * Carga todas las secciones configuradas
      */
     async loadAllSections() {
-        console.log('🔄 Iniciando carga de secciones...');
 
         const loadPromises = this.sections.map(section =>
             this.loadSection(section.id, section.file)
@@ -73,7 +71,6 @@ const Loader = {
 
         try {
             await Promise.all(loadPromises);
-            console.log('✅ Todas las secciones cargadas exitosamente');
 
             // Disparar evento personalizado cuando todas las secciones estén cargadas
             document.dispatchEvent(new Event('sectionsLoaded'));
